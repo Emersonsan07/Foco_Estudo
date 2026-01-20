@@ -28,6 +28,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Se logado, Inicializar Dados e Rotas
         console.log('User logged in:', session.user.email);
 
+        // Personalizar Saudação
+        const userName = session.user.user_metadata?.display_name || 'Estudante';
+        const greetingEl = document.querySelector('.greeting');
+        const avatarEl = document.querySelector('.avatar');
+
+        if (greetingEl) greetingEl.textContent = `Olá, ${userName}`;
+        if (avatarEl) avatarEl.textContent = userName.charAt(0).toUpperCase();
+
         await State.init(session.user.id);
 
         Router.init({

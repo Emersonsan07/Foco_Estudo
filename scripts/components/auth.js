@@ -1,6 +1,7 @@
 import { Supabase } from '../supabase-client.js';
 
 export function renderAuth() {
+    let isLoginMode = true;
     const container = document.createElement('div');
     container.className = 'fadeIn';
 
@@ -11,93 +12,122 @@ export function renderAuth() {
     container.style.height = '100vh';
     container.style.background = 'hsl(var(--bg-app))';
 
-    container.innerHTML = `
-        <div class="card" style="width: 100%; max-width: 400px; padding: 32px;">
-            <div style="text-align: center; margin-bottom: 24px;">
-                <h1 class="logo" style="font-size: 2rem;">Foco.</h1>
-                <p style="color: var(--text-muted);">Entre para sincronizar seus estudos.</p>
-            </div>
-
-            <form id="auth-form" style="display: flex; flex-direction: column; gap: 16px;">
-                <div class="form-group">
-                    <label class="form-label">E-mail</label>
-                    <input type="email" id="email" required placeholder="seu@email.com" style="width: 100%;">
+    function updateUI() {
+        container.innerHTML = `
+            <div class="card" style="width: 100%; max-width: 400px; padding: 32px;">
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <h1 class="logo" style="font-size: 2rem;">Foco.</h1>
+                    <p id="auth-subtitle" style="color: var(--text-muted);">${isLoginMode ? 'Entre para sincronizar seus estudos.' : 'Crie sua conta para começar.'}</p>
                 </div>
+
+                <form id="auth-form" style="display: flex; flex-direction: column; gap: 16px;">
+                    <div class="form-group" id="name-group" style="display: ${isLoginMode ? 'none' : 'block'};">
+                        <label class="form-label">Nome</label>
+                        <input type="text" id="name" ${isLoginMode ? '' : 'required'} placeholder="Seu nome" style="width: 100%;">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">E-mail</label>
+                        <input type="email" id="email" required placeholder="seu@email.com" style="width: 100%;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Senha</label>
+                        <input type="password" id="password" required placeholder="******" style="width: 100%;">
+                    </div>
+
+                    <div id="auth-error" style="color: var(--color-danger); font-size: 0.9rem; display: none;"></div>
+
+                    <button type="submit" class="btn btn-primary" id="btn-submit">
+                        ${isLoginMode ? 'Entrar' : 'Criar Conta'}
+                    </button>
+                </form>
                 
-                <div class="form-group">
-                    <label class="form-label">Senha</label>
-                    <input type="password" id="password" required placeholder="******" style="width: 100%;">
+                <div style="margin-top: 24px; text-align: center; font-size: 0.9rem; color: var(--text-muted);">
+                    <p>
+                        ${isLoginMode ? 'Ainda não tem conta?' : 'Já possui uma conta?'}
+                        <button id="toggle-auth" style="background: none; border: none; color: var(--color-primary); cursor: pointer; font-weight: 500; text-decoration: underline; padding: 0 4px;">
+                            ${isLoginMode ? 'Criar agora' : 'Fazer login'}
+                        </button>
+                    </p>
                 </div>
-
-                <div id="auth-error" style="color: var(--color-danger); font-size: 0.9rem; display: none;"></div>
-
-                <button type="submit" class="btn btn-primary" id="btn-submit">
-                    Entrar / Cadastrar
-                </button>
-            </form>
-            
-            <div style="margin-top: 16px; text-align: center; font-size: 0.8rem; color: var(--text-muted);">
-                <p>Se não tiver conta, criaremos uma automaticamente.</p>
             </div>
-        </div>
-    `;
+        `;
 
-    const form = container.querySelector('#auth-form');
-    const emailInput = container.querySelector('#email');
-    const passInput = container.querySelector('#password');
-    const errorDisplay = container.querySelector('#auth-error');
-    const btnSubmit = container.querySelector('#btn-submit');
+        setupListeners();
+    }
 
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = emailInput.value;
-        const password = passInput.value;
+    function setupListeners() {
+        const form = container.querySelector('#auth-form');
+        const nameInput = container.querySelector('#name');
+        const emailInput = container.querySelector('#email');
+        const passInput = container.querySelector('#password');
+        const errorDisplay = container.querySelector('#auth-error');
+        const btnSubmit = container.querySelector('#btn-submit');
+        const toggleBtn = container.querySelector('#toggle-auth');
 
-        btnSubmit.disabled = true;
-        btnSubmit.textContent = 'Processando...';
-        errorDisplay.style.display = 'none';
-
-        const client = Supabase.client;
-
-        // Tentar Login primeiro
-        let { data, error } = await client.auth.signInWithPassword({
-            email,
-            password
+        toggleBtn.addEventListener('click', () => {
+            isLoginMode = !isLoginMode;
+            updateUI();
         });
 
-        if (error) {
-            // Se falhar, tentar cadastro (Sign Up)
-            if (error.message.includes('Invalid login credentials') || error.message.includes('not found')) {
-                const signUp = await client.auth.signUp({
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = emailInput.value;
+            const password = passInput.value;
+
+            btnSubmit.disabled = true;
+            btnSubmit.textContent = 'Processando...';
+            errorDisplay.style.display = 'none';
+
+            const client = Supabase.client;
+
+            if (isLoginMode) {
+                // Login
+                const { data, error } = await client.auth.signInWithPassword({
                     email,
                     password
                 });
 
-                if (signUp.error) {
-                    showError(signUp.error.message);
+                if (error) {
+                    showError(error.message);
                     btnSubmit.disabled = false;
-                    btnSubmit.textContent = 'Entrar / Cadastrar';
+                    btnSubmit.textContent = 'Entrar';
                 } else {
-                    alert('Cadastro realizado! Verifique seu e-mail para confirmar (se necessário) ou entre novamente.');
-                    // Em alguns casos o Auto Confirm está ligado, então o login já valeria.
-                    // Mas vamos pedir para tentar entrar.
                     window.location.reload();
                 }
             } else {
-                showError(error.message);
-                btnSubmit.disabled = false;
-                btnSubmit.textContent = 'Entrar / Cadastrar';
-            }
-        } else {
-            // Sucesso no Login
-            window.location.reload(); // Recarrega para iniciar a App (App.js vai verificar sessão)
-        }
-    });
+                // Cadastro
+                const name = nameInput.value;
+                const { data, error } = await client.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            display_name: name
+                        }
+                    }
+                });
 
-    function showError(msg) {
-        errorDisplay.textContent = msg;
-        errorDisplay.style.display = 'block';
+                if (error) {
+                    showError(error.message);
+                    btnSubmit.disabled = false;
+                    btnSubmit.textContent = 'Criar Conta';
+                } else {
+                    alert('Cadastro realizado! Verifique seu e-mail para confirmar (se necessário) e faça login.');
+                    isLoginMode = true;
+                    updateUI();
+                }
+            }
+        });
+
+        function showError(msg) {
+            errorDisplay.textContent = msg;
+            errorDisplay.style.display = 'block';
+        }
     }
 
+    updateUI();
     return container;
 }
+
