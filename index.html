@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="styles/layout.css">
     <link rel="stylesheet" href="styles/components.css">
     <link rel="stylesheet" href="styles/pages.css">
+    <link rel="stylesheet" href="styles/toast.css">
 </head>
 
 <body>
@@ -29,37 +30,48 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <h1 class="logo">Foco.</h1>
+                <div class="logo-wrapper">
+                    <h1 class="logo">Foco.</h1>
+                    <button id="sidebar-toggle" class="btn-icon">
+                        <i data-lucide="panel-left"></i>
+                    </button>
+                </div>
             </div>
 
             <nav class="sidebar-nav">
                 <button class="nav-item active" data-target="dashboard">
-                    <i data-lucide="home"></i> Dashboard
+                    <i data-lucide="home"></i> <span>Dashboard</span>
                 </button>
                 <button class="nav-item" data-target="subjects">
-                    <i data-lucide="book-open"></i> Matérias
+                    <i data-lucide="book-open"></i> <span>Matérias</span>
                 </button>
                 <button class="nav-item" data-target="study">
-                    <i data-lucide="clock"></i> Estudar
+                    <i data-lucide="clock"></i> <span>Estudar</span>
                 </button>
                 <button class="nav-item" data-target="stats">
-                    <i data-lucide="bar-chart-2"></i> Estatísticas
+                    <i data-lucide="bar-chart-2"></i> <span>Estatísticas</span>
                 </button>
             </nav>
 
             <div class="sidebar-footer">
                 <button id="theme-toggle" class="nav-item">
-                    <i data-lucide="moon"></i> Tema
+                    <i data-lucide="moon"></i> <span>Tema</span>
                 </button>
                 <button class="nav-item" data-target="settings">
-                    <i data-lucide="settings"></i> Configurações
+                    <i data-lucide="settings"></i> <span>Configurações</span>
                 </button>
             </div>
         </aside>
 
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay"></div>
+
         <!-- Main Content -->
         <main class="main-content">
             <header class="top-header">
+                <button id="mobile-menu-toggle" class="btn-icon" style="display: none;">
+                    <i data-lucide="menu"></i>
+                </button>
                 <h2 id="page-title">Dashboard</h2>
                 <div class="user-profile">
                     <span class="greeting">Olá, Estudante</span>

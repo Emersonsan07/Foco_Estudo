@@ -16,6 +16,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     lucide.createIcons();
     ThemeManager.init();
 
+    // Sidebar Toggle
+    // Sidebar Toggle (Desktop)
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebarToggle && sidebar) {
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+        });
+    }
+
+    // Mobile Sidebar Toggle
+    const mobileToggle = document.getElementById('mobile-menu-toggle');
+    const overlay = document.querySelector('.sidebar-overlay');
+
+    function closeMobileSidebar() {
+        sidebar.classList.remove('mobile-open');
+        overlay.classList.remove('active');
+    }
+
+    if (mobileToggle && sidebar && overlay) {
+        mobileToggle.addEventListener('click', () => {
+            sidebar.classList.add('mobile-open');
+            overlay.classList.add('active');
+        });
+
+        overlay.addEventListener('click', closeMobileSidebar);
+
+        // Close when clicking nav items on mobile
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    closeMobileSidebar();
+                }
+            });
+        });
+    }
+
     // Verificar Sessão Supabase
     const client = Supabase.client;
     const { data: { session } } = await client.auth.getSession();

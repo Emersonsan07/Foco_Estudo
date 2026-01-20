@@ -4,23 +4,44 @@
     height: 100vh;
     width: 100vw;
     overflow: hidden;
+    padding: var(--space-md);
+    gap: var(--space-md);
+    background-color: hsl(var(--bg-app));
 }
 
 /* Sidebar */
 .sidebar {
     width: 260px;
     background-color: hsl(var(--bg-panel));
-    border-right: 1px solid hsl(var(--border-subtle));
+    border: 1px solid hsl(var(--border-subtle));
+    border-radius: var(--radius-lg);
     display: flex;
     flex-direction: column;
-    padding: var(--space-lg);
+    padding: var(--space-md);
     flex-shrink: 0;
-    transition: background-color var(--transition-normal);
+    transition: width var(--transition-normal), padding var(--transition-normal);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+/* ... (omitting intermediate lines manually, wait, I can't partially match easily if I want to edit two places. I'll do two replaces or one big one if close.) */
+/* They are far apart. I'll use multi_replace? No, simple replace is cleaner if I do strictly one at a time or just one big block if possible. They are Line 10 and Line 131. Too far. I'll do two calls. Or use multi_replace_file_content. */
+
+.sidebar.collapsed {
+    width: 80px;
+    padding: var(--space-md) var(--space-xs);
 }
 
 .sidebar-header {
     margin-bottom: var(--space-xl);
-    padding-left: var(--space-sm);
+    padding: 0 var(--space-xs);
+}
+
+.logo-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 40px;
 }
 
 .logo {
@@ -31,6 +52,17 @@
     -webkit-text-fill-color: transparent;
     font-weight: 900;
     letter-spacing: -0.05em;
+    white-space: nowrap;
+    transition: opacity var(--transition-fast);
+}
+
+.sidebar.collapsed .logo {
+    display: none;
+    opacity: 0;
+}
+
+.sidebar.collapsed .logo-wrapper {
+    justify-content: center;
 }
 
 .sidebar-nav {
@@ -51,6 +83,16 @@
     text-align: left;
     width: 100%;
     transition: all var(--transition-fast);
+    white-space: nowrap;
+}
+
+.sidebar.collapsed .nav-item {
+    justify-content: center;
+    padding: var(--space-md) 0;
+}
+
+.sidebar.collapsed .nav-item span {
+    display: none;
 }
 
 .nav-item:hover {
@@ -78,6 +120,11 @@
     gap: var(--space-xs);
 }
 
+.sidebar.collapsed .sidebar-footer {
+    border-top: none;
+    align-items: center;
+}
+
 /* Main Content */
 .main-content {
     flex: 1;
@@ -86,6 +133,9 @@
     background-color: hsl(var(--bg-app));
     position: relative;
     overflow: hidden;
+    border-radius: var(--radius-lg);
+    border: 1px solid hsl(var(--border-subtle));
+    box-shadow: var(--shadow-md);
 }
 
 .top-header {
@@ -129,7 +179,7 @@
 
 .content-wrapper {
     flex: 1;
-    padding: var(--space-2xl);
+    padding: var(--space-lg);
     overflow-y: auto;
     padding-top: 0;
     /* Header já dá o espaçamento */
@@ -155,4 +205,116 @@
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* Mobile Overlay */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-fast);
+    backdrop-filter: blur(2px);
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    #app {
+        padding: 0;
+        gap: 0;
+        flex-direction: column;
+    }
+
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        height: 100vh;
+        z-index: 999;
+        transform: translateX(-100%);
+        border-radius: 0;
+        border: none;
+        border-right: 1px solid hsl(var(--border-subtle));
+        width: 280px;
+    }
+
+    .sidebar.mobile-open {
+        transform: translateX(0);
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Disable collapsed logic on mobile */
+    .sidebar.collapsed {
+        width: 280px;
+        padding: var(--space-md);
+    }
+
+    .sidebar.collapsed .logo {
+        display: block;
+        opacity: 1;
+    }
+
+    .sidebar.collapsed .logo-wrapper {
+        justify-content: space-between;
+    }
+
+    .sidebar.collapsed .nav-item {
+        justify-content: flex-start;
+        padding: var(--space-md);
+    }
+
+    .sidebar.collapsed .nav-item span {
+        display: inline;
+    }
+
+    .sidebar.collapsed .sidebar-footer {
+        border-top: 1px solid hsl(var(--border-subtle));
+        align-items: stretch;
+    }
+
+
+    .main-content {
+        border-radius: 0;
+        border: none;
+        width: 100%;
+        height: 100vh;
+    }
+
+    .content-wrapper {
+        padding: var(--space-md);
+    }
+
+    .top-header {
+        padding: 0 var(--space-md);
+        height: 64px;
+        gap: var(--space-sm);
+    }
+
+    #mobile-menu-toggle {
+        display: flex !important;
+    }
+
+    /* Adjust toggle for mobile */
+    #sidebar-toggle {
+        display: none;
+        /* Hide internal toggle, we might need an external one or just verify logic */
+    }
+
+    /* We need a toggle button visible on mobile if the internal one is hidden or hard to reach */
+    /* Reuse the logo-wrapper toggle or move it? 
+       Actually, let's keep the internal one but maybe we need one in the top-header too?
+       For now, let's assume the user can swipe or we add a header toggle.
+       Wait, the sidebar is hidden. We need a trigger in the main content to open it!
+    */
 }

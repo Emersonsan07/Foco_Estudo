@@ -15,25 +15,25 @@ export function renderAuth() {
     function updateUI() {
         container.innerHTML = `
             <div class="card" style="width: 100%; max-width: 400px; padding: 32px;">
-                <div style="text-align: center; margin-bottom: 24px;">
-                    <h1 class="logo" style="font-size: 2rem;">Foco.</h1>
-                    <p id="auth-subtitle" style="color: var(--text-muted);">${isLoginMode ? 'Entre para sincronizar seus estudos.' : 'Crie sua conta para começar.'}</p>
+                <div style="text-align: center; margin-bottom: 32px;">
+                    <h1 class="logo typing-effect" style="font-size: 2.5rem; padding-right: 10px;">Foco.</h1>
+                    <p id="auth-subtitle" style="color: var(--text-muted); margin-top: 8px;">${isLoginMode ? 'Entre para sincronizar seus estudos.' : 'Crie sua conta para começar.'}</p>
                 </div>
 
-                <form id="auth-form" style="display: flex; flex-direction: column; gap: 16px;">
-                    <div class="form-group" id="name-group" style="display: ${isLoginMode ? 'none' : 'block'};">
-                        <label class="form-label">Nome</label>
-                        <input type="text" id="name" ${isLoginMode ? '' : 'required'} placeholder="Seu nome" style="width: 100%;">
+                <form id="auth-form" style="display: flex; flex-direction: column; gap: 20px;">
+                    <div class="dynamic-input-group" id="name-group" style="display: ${isLoginMode ? 'none' : 'block'};">
+                        <input type="text" id="name" ${isLoginMode ? '' : 'required'} placeholder=" ">
+                        <label for="name">Nome</label>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">E-mail</label>
-                        <input type="email" id="email" required placeholder="seu@email.com" style="width: 100%;">
+                    <div class="dynamic-input-group">
+                        <input type="email" id="email" required placeholder=" ">
+                        <label for="email">E-mail</label>
                     </div>
                     
-                    <div class="form-group">
-                        <label class="form-label">Senha</label>
-                        <input type="password" id="password" required placeholder="******" style="width: 100%;">
+                    <div class="dynamic-input-group">
+                        <input type="password" id="password" required placeholder=" ">
+                        <label for="password">Senha</label>
                     </div>
 
                     <div id="auth-error" style="color: var(--color-danger); font-size: 0.9rem; display: none;"></div>

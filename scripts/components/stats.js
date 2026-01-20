@@ -13,12 +13,13 @@ export function renderStats() {
     // Agrupar por matéria
     const bySubject = {};
     sessions.forEach(s => {
-        if (!bySubject[s.subjectId]) {
-            bySubject[s.subjectId] = { duration: 0, questions: 0, correct: 0 };
+        const subjectId = s.subject_id || s.subjectId;
+        if (!bySubject[subjectId]) {
+            bySubject[subjectId] = { duration: 0, questions: 0, correct: 0 };
         }
-        bySubject[s.subjectId].duration += s.duration;
-        bySubject[s.subjectId].questions += (s.questions || 0);
-        bySubject[s.subjectId].correct += (s.correct || 0);
+        bySubject[subjectId].duration += s.duration;
+        bySubject[subjectId].questions += (s.questions || 0);
+        bySubject[subjectId].correct += (s.correct || 0);
     });
 
     const chartData = Object.entries(bySubject).map(([id, data]) => {
@@ -72,7 +73,7 @@ export function renderStats() {
 
     div.innerHTML = `
         <div style="margin-bottom: 24px;">
-            <h3>Dezempenho Geral</h3>
+            <h3>Desempenho Geral</h3>
         </div>
         
         <!-- Recomendação com base no RPS (Repetição Espaçada) -->
@@ -146,11 +147,13 @@ export function renderStats() {
                             <th style="padding: 12px;">Data</th>
                             <th style="padding: 12px;">Matéria</th>
                             <th style="padding: 12px;">Duração</th>
+                            <th style="padding: 12px;">Questões</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${sessions.slice().reverse().map(s => {
-        const sub = subjects.find(sub => sub.id == s.subjectId);
+        const subjectId = s.subject_id || s.subjectId;
+        const sub = subjects.find(sub => sub.id == subjectId);
         return `
                             <tr style="border-bottom: 1px solid var(--border-subtle);">
                                 <td style="padding: 12px;">${new Date(s.date).toLocaleDateString()} ${new Date(s.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
@@ -159,6 +162,7 @@ export function renderStats() {
                                     ${sub ? sub.name : 'Excluída'}
                                 </td>
                                 <td style="padding: 12px;">${(s.duration / 60).toFixed(1)} min</td>
+                                <td style="padding: 12px;">${s.questions || 0} (${s.correct || 0})</td>
                             </tr>
                             `;
     }).join('')}

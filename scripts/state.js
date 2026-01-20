@@ -1,4 +1,5 @@
 import { Supabase } from './supabase-client.js';
+import { Toast } from './components/toast.js';
 
 export const State = {
     data: {
@@ -21,17 +22,25 @@ export const State = {
         // 1. Matérias e Tópicos
         const { data: subjects, error: subjError } = await client
             .from('subjects')
-            .select(`*, topics (*)`)
+            .select(`*, topics (*, subitems (*))`)
             .order('created_at', { ascending: true });
 
         if (subjects) {
             subjects.forEach(s => {
                 if (s.topics) {
                     s.topics.sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+                    // Ordenar subitems também
+                    s.topics.forEach(t => {
+                        if (t.subitems) {
+                            t.subitems.sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+                        }
+                    });
                 }
             });
         }
         if (subjError) console.error('Error fetching subjects:', subjError);
+
+        // ... (resto do fetch mantém igual, só mudei a query acima)
 
         // 2. Sessões
         const { data: sessions, error: sessError } = await client
@@ -51,9 +60,7 @@ export const State = {
         if (profile) {
             this.data.dailyGoal = profile.daily_goal || 3;
         } else {
-            // Se não tem perfil, cria um padrão (lazy creation)
             this.data.dailyGoal = 3;
-            // Tenta criar silenciosamente
             await client.from('profiles').insert({ id: this.userId, daily_goal: 3 });
         }
 
@@ -85,8 +92,9 @@ export const State = {
             data.topics = [];
             this.data.subjects.push(data);
             this.notify();
+            Toast.success('Matéria criada com sucesso!');
         } else {
-            alert('Erro ao criar matéria: ' + error.message);
+            Toast.error('Erro ao criar matéria: ' + error.message);
         }
     },
 
@@ -108,10 +116,9 @@ export const State = {
         const dbSession = {
             ...session,
             user_id: this.userId,
-            date: new Date().toISOString()
+            date: session.date || new Date().toISOString()
         };
 
-        // Fix: JS camelCase to DB snake_case
         if (dbSession.subjectId) {
             dbSession.subject_id = dbSession.subjectId;
             delete dbSession.subjectId;
@@ -148,9 +155,6 @@ export const State = {
     // Topics Actions
     async addTopic(subjectId, topicName) {
         const client = Supabase.client;
-        /*
-         * Pega o maior order_index atual para adicionar no final
-         */
         const subject = this.data.subjects.find(s => s.id === subjectId);
         let maxOrder = 0;
         if (subject && subject.topics && subject.topics.length > 0) {
@@ -165,12 +169,13 @@ export const State = {
                 completed: false,
                 order_index: maxOrder + 1
             })
-            .select()
+            .select('*, subitems(*)') // IMPORTANT: Select subitems relation (empty initially)
             .single();
 
         if (!error && data) {
             if (subject) {
                 if (!subject.topics) subject.topics = [];
+                data.subitems = []; // Garantir array vazio
                 subject.topics.push(data);
                 this.notify();
             }
@@ -195,7 +200,7 @@ export const State = {
                 if (error) {
                     topic.completed = !newState;
                     this.notify();
-                    alert('Erro ao atualizar tópico');
+                    Toast.error('Erro ao atualizar tópico');
                 }
             }
         }
@@ -216,12 +221,10 @@ export const State = {
         subject.topics[index] = subject.topics[newIndex];
         subject.topics[newIndex] = temp;
 
-        // Re-indexar localmente
         subject.topics.forEach((t, i) => t.order_index = i);
 
         this.notify();
 
-        // Persistir no Supabase (Atualiza os dois envolvidos)
         const client = Supabase.client;
         const t1 = subject.topics[index];
         const t2 = subject.topics[newIndex];
@@ -230,5 +233,113 @@ export const State = {
             client.from('topics').update({ order_index: t1.order_index }).eq('id', t1.id),
             client.from('topics').update({ order_index: t2.order_index }).eq('id', t2.id)
         ]);
+    },
+
+    // --- Subitems Actions ---
+
+    async addSubitem(topicId, name) {
+        const client = Supabase.client;
+
+        // Find Local
+        let targetTopic = null;
+        let targetSubject = null;
+
+        for (const s of this.data.subjects) {
+            if (s.topics) {
+                const t = s.topics.find(t => t.id == topicId); // loose equality for string/int IDs
+                if (t) {
+                    targetTopic = t;
+                    targetSubject = s;
+                    break;
+                }
+            }
+        }
+
+        if (!targetTopic) return;
+
+        let maxOrder = 0;
+        if (targetTopic.subitems && targetTopic.subitems.length > 0) {
+            maxOrder = Math.max(...targetTopic.subitems.map(s => s.order_index || 0));
+        }
+
+        const { data, error } = await client
+            .from('subitems')
+            .insert({
+                topic_id: topicId,
+                name: name,
+                completed: false,
+                order_index: maxOrder + 1
+            })
+            .select()
+            .single();
+
+        if (!error && data) {
+            if (!targetTopic.subitems) targetTopic.subitems = [];
+            targetTopic.subitems.push(data);
+            this.notify();
+        } else {
+            console.error('Error adding subitem', error);
+            Toast.error('Erro ao adicionar subitem (Verifique SQL)');
+        }
+    },
+
+    async toggleSubitem(topicId, subitemId) {
+        // Encontrar localmente
+        let targetTopic = null;
+        for (const s of this.data.subjects) {
+            if (s.topics) {
+                const t = s.topics.find(t => t.id == topicId);
+                if (t) {
+                    targetTopic = t;
+                    break;
+                }
+            }
+        }
+
+        if (!targetTopic || !targetTopic.subitems) return;
+
+        const subitem = targetTopic.subitems.find(s => s.id == subitemId);
+        if (subitem) {
+            const newState = !subitem.completed;
+            subitem.completed = newState;
+            this.notify();
+
+            const client = Supabase.client;
+            const { error } = await client
+                .from('subitems')
+                .update({ completed: newState })
+                .eq('id', subitemId);
+
+            if (error) {
+                subitem.completed = !newState; // rollback
+                this.notify();
+                Toast.error('Erro ao atualizar subitem');
+                console.error('Erro toggle subitem', error);
+            }
+        }
+    },
+
+    async deleteSubitem(topicId, subitemId) {
+        const client = Supabase.client;
+        const { error } = await client
+            .from('subitems')
+            .delete()
+            .eq('id', subitemId);
+
+        if (!error) {
+            // Update local
+            for (const s of this.data.subjects) {
+                if (s.topics) {
+                    const t = s.topics.find(t => t.id == topicId);
+                    if (t && t.subitems) {
+                        t.subitems = t.subitems.filter(si => si.id != subitemId);
+                        this.notify();
+                        break;
+                    }
+                }
+            }
+        } else {
+            Toast.error('Erro ao deletar subitem');
+        }
     }
 };

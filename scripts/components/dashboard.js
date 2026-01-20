@@ -77,7 +77,7 @@ function renderRecentSessions(sessions, subjects) {
     return `
         <ul style="list-style: none; margin-top: 16px;">
             ${recent.map(session => {
-        const subject = subjects.find(s => s.id == session.subjectId);
+        const subject = subjects.find(s => s.id == (session.subject_id || session.subjectId));
         const color = subject ? subject.color : 'var(--text-muted)';
         const name = subject ? subject.name : 'Matéria Excluída';
         const date = new Date(session.date).toLocaleDateString('pt-BR');
@@ -89,7 +89,7 @@ function renderRecentSessions(sessions, subjects) {
                         <span style="width: 10px; height: 10px; border-radius: 50%; background: ${color}"></span>
                         ${name}
                     </span>
-                    <span style="color: var(--text-muted)">${duration} min • ${date}</span>
+                    <span style="color: var(--text-muted)">${duration} min • ${session.questions || 0} itens • ${date}</span>
                 </li>
                 `;
     }).join('')}
