@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foco Estudos | Gerenciador de Estudo Gratuito</title>
+    <link rel="icon" href="https://online-timer.org/images/icon/online-timer.svg" type="image/x-icon">
+    <meta name="description"
+        content="Organize seus estudos, cronometre sessões, acompanhe seu edital verticalizado e visualize estatísticas detalhadas. 100% gratuito e local.">
+    <meta name="keywords" content="estudos, cronômetro, edital verticalizado, dashboard, foco, produtividade">
+
+    <!-- Ícones (Lucide) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Estilos -->
+    <link rel="stylesheet" href="styles/variables.css">
+    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/pages.css">
+</head>
+
+<body>
+    <div id="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="logo">Foco.</h1>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-target="dashboard">
+                    <i data-lucide="home"></i> Dashboard
+                </button>
+                <button class="nav-item" data-target="subjects">
+                    <i data-lucide="book-open"></i> Matérias
+                </button>
+                <button class="nav-item" data-target="study">
+                    <i data-lucide="clock"></i> Estudar
+                </button>
+                <button class="nav-item" data-target="stats">
+                    <i data-lucide="bar-chart-2"></i> Estatísticas
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button id="theme-toggle" class="nav-item">
+                    <i data-lucide="moon"></i> Tema
+                </button>
+                <button class="nav-item" data-target="settings">
+                    <i data-lucide="settings"></i> Configurações
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <h2 id="page-title">Dashboard</h2>
+                <div class="user-profile">
+                    <span class="greeting">Olá, Estudante</span>
+                    <div class="avatar">E</div>
+                </div>
+            </header>
+
+            <div id="content-area" class="content-wrapper">
+                <!-- As views serão injetadas aqui via JavaScript -->
+                <div id="dashboard-view" class="view active">
+                    <!-- Dashboard será renderizado aqui -->
+                    <div class="loading">Carregando Dashboard...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Carregamos scripts como módulos para usar import/export mesmo sem bundler -->
+    <script type="module" src="scripts/app.js"></script>
+</body>
+
+</html>

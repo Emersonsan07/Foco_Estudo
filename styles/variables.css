@@ -1,0 +1,77 @@
+/* Fontes */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+    /* Configurações Gerais */
+    --font-main: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-full: 9999px;
+
+    /* Espaçamentos */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+
+    /* Cores Base (Compartilhadas) */
+    --color-primary: 250 80% 60%;
+    /* #6347ff (Roxo Vibrante) */
+    --color-secondary: 320 80% 60%;
+    /* #ff47cc (Rosa Vibrante) */
+    --color-success: 150 60% 45%;
+    --color-warning: 35 90% 50%;
+    --color-danger: 0 80% 60%;
+
+    /* TEMA CLARO (Padrão) */
+    --bg-app: 210 20% 98%;
+    /* Fundo da aplicação */
+    --bg-panel: 0 0% 100%;
+    /* Fundo da sidebar/header */
+    --bg-card: 0 0% 100%;
+    /* Fundo de cards */
+
+    --text-main: 220 20% 10%;
+    /* Texto principal (quase preto) */
+    --text-muted: 220 10% 45%;
+    /* Texto secundário */
+    --text-faint: 220 10% 70%;
+    /* Texto terciário */
+
+    --border-subtle: 220 10% 90%;
+    /* Bordas sutis */
+    --border-focus: 250 80% 60%;
+    /* Borda de foco */
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-glow: 0 0 15px rgba(99, 71, 255, 0.3);
+}
+
+/* TEMA ESCURO */
+[data-theme="dark"] {
+    --bg-app: 220 20% 8%;
+    /* Fundo muito escuro */
+    --bg-panel: 220 20% 10%;
+    /* Sidebar ligeiramente mais clara */
+    --bg-card: 220 20% 12%;
+    /* Cards */
+
+    --text-main: 220 10% 95%;
+    --text-muted: 220 10% 65%;
+    --text-faint: 220 10% 40%;
+
+    --border-subtle: 220 20% 18%;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 20px rgba(99, 71, 255, 0.4);
+}
